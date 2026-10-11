@@ -31,12 +31,18 @@
 5. Работай через `linux/remote.sh` (см. §4). Админ-задачи — **только** через
    `remote.sh elev`.
 
-**Холодный старт (нет воркспейса, нет файлов):**
+**Холодный старт (совсем новая песочница без файлов):**
 
-- Нужен этот репозиторий (даст пользователь) + auth key (если состояние
-  потеряно). Порядок: склонировать репо → шаг 1 → шаг 2 → шаг 4.
-- Спроси у пользователя только то, чего не хватает. Ключи и пароли —
-  не логировать, не коммитить, в чат не выводить.
+1. Попроси у владельца доступ к этому репозиторию (клонировать/ZIP-архив) и,
+   если состояние потеряно, Tailscale auth key (`tskey-auth-…`).
+2. Если у тебя нет SSH-ключа агента — сгенерируй новую пару:
+   `ssh-keygen -t ed25519 -f ~/.ssh/agent_ed25519 -N ""`
+   и попроси владельца на ПК выполнить (один клик UAC):
+   `powershell -NoProfile -ExecutionPolicy Bypass -File windows\add-key.ps1 -Key "<твой публичный ключ>"`
+3. Дальше — как в «обычном случае»: `bash linux/ts-boot.sh` → `remote.sh ping`.
+
+Спроси у пользователя только то, чего не хватает. Ключи и пароли —
+не логировать, не коммитить, в чат целиком не выводить.
 
 ---
 
@@ -167,25 +173,38 @@ linux/remote.sh elev-stop              # пауза после текущего 
    Готово: скрипт напечатает tailnet-IP и статусы.
 4. Сказать агенту «готово» — он найдёт ПК в сети сам (`ts-boot.sh`).
 
+> Если у будущего агента **свой** SSH-ключ (не тот, что по умолчанию) — добавьте
+> его одной командой: `windows\add-key.ps1 -Key "ssh-ed25519 AAAA… метка"`.
+> Скрипт сам разберётся с правами (ACL по SID) и перезапустит sshd.
+
 ---
 
-## 7. Tailscale на Windows: только надёжный способ (MSI)
+## 7. Tailscale на Windows: способы установки (все проверены на практике)
 
 `winget` часто падает на источнике msstore: `0x8a15005e: Сертификат сервера
-не соответствует...`. Это баг источника, не Tailscale.
+не соответствует...`. Это баг источника, не Tailscale. Рабочие пути:
 
-1. Сначала попробуй: `winget install -e --id tailscale.tailscale --source winget`
-2. **Если не сработало — MSI (проверено, работает всегда):**
+1. **winget, но явно через источник winget:**
    ```powershell
-   $u='https://pkgs.tailscale.com/stable/'   # взять файл tailscale-setup-<VER>-amd64.msi
-   # либо новейшую версию:
-   $html=(Invoke-WebRequest $u -UseBasicParsing).Content
+   winget install -e --id tailscale.tailscale --source winget
+   ```
+2. **MSI (стандартный вариант, рекомендуется для чистого ПК):**
+   ```powershell
+   $html=(Invoke-WebRequest 'https://pkgs.tailscale.com/stable/' -UseBasicParsing).Content
    $v=([regex]::Matches($html,'tailscale-setup-([\d\.]+)-amd64\.msi')|%{$_.Groups[1].Value}|sort -Unique)[-1]
    Invoke-WebRequest "https://pkgs.tailscale.com/stable/tailscale-setup-$v-amd64.msi" -OutFile "$env:TEMP\ts.msi"
    Start-Process msiexec -ArgumentList '/i',"$env:TEMP\ts.msi",'/qn','/norestart' -Wait
    ```
-   Тихая установка `/qn` — ок, служба стартует сама.
-3. `setup-pc.ps1` делает всё это автоматически (сначала winget, при провале — MSI).
+   Тихая установка `/qn` работает, служба ставится и стартует сама.
+3. **Портативная сборка (то, как фактически установлено на этом ПК):**
+   скачать `tailscale_<ver>_windows_amd64.zip` → распаковать в постоянную папку
+   (здесь: `F:\New Folder\`: `tailscale.exe`, `tailscaled.exe`, `tailscale-ipn.exe`,
+   `wintun.dll`) → запустить `tailscale-ipn.exe` → войти. Служба `Tailscale`
+   (автозапуск) будет указывать на `tailscaled.exe` из этой папки, поэтому
+   **папку нельзя перемещать или удалять** — иначе служба сломается.
+
+`setup-pc.ps1` сам находит уже установленный Tailscale (Program Files / PATH /
+путь службы — любой из вариантов), а если его нет — ставит через winget → MSI.
 
 ---
 
@@ -240,6 +259,7 @@ ai-bridge/
 │   └── remote.sh              ← пульт: cmd/psc/ps/get/put/elev + проверки
 └── windows/
     ├── setup-pc.ps1           ← «всё в одном» для нового ПК (sshd, ключ, Tailscale, раннер)
+    ├── add-key.ps1            ← добавить публичный ключ нового агента (холодный старт)
     ├── elev/
     │   ├── runner.ps1         ← админ-раннер (исполняет задания из elev\in)
     │   └── enable-elev.ps1    ← разовая регистрация задачи ArenaElev + запуск
