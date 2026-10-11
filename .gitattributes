@@ -1,0 +1,7 @@
+# Все текстовые — авто; скрипты держим в их родных переводах строк
+* text=auto
+*.sh    text eol=lf
+*.ps1   text eol=crlf
+*.bat   text eol=crlf
+*.md    text eol=lf
+*.txt   text eol=lf

@@ -1,0 +1,18 @@
+# секреты и рантайм — НИКОГДА не коммитить
+.ts-authkey
+*.tskey*
+ts-backup/
+tailscaled.state
+
+# рантайм/логи
+*.log
+bridge-log.txt
+tunnel.out
+tunnel.err
+host.txt
+port.txt
+socks.txt
+
+# мусор систем
+.DS_Store
+Thumbs.db
