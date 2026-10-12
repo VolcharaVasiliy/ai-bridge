@@ -42,6 +42,12 @@ bash <(curl -fsSL https://raw.githubusercontent.com/VolcharaVasiliy/ai-bridge-bo
 `-NoElevate` (в текущем админ-окне). Проверено: `boot.ps1 -DryRun` корректно
 скачивает и проверяет файлы; `setup-pc.ps1 -Check` даёт полный отчёт.
 
+**Подключение ЛЮБОГО ИИ его собственным ключом** (ИИ даёт владельцу одну строку):
+- ПК уже настроен: `&([scriptblock]::Create((irm …/windows/add-key.ps1))) -Key "ssh-ed25519 … имя-агента"`
+- Новый ПК: `&([scriptblock]::Create((irm …/boot.ps1))) -AgentKey "ssh-ed25519 … имя-агента"`
+- Без параметра `irm …/windows/add-key.ps1 | iex` спросит ключ; `-Check` — проверка.
+  Ключи других агентов не затираются (в файлах — построчный список ключей).
+
 ---
 
 ## 1. Для ИИ-агента: прочитай это первым
