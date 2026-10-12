@@ -14,6 +14,36 @@
 
 ---
 
+## 0. ОДНА КОМАНДА (бутстрап)
+
+Скрипты запускаются прямо со ссылки, без скачивания и распаковки.
+Для этого есть маленький **публичный** репозиторий-загрузчик
+(`VolcharaVasiliy/ai-bridge-boot`) — в нём только скрипты и публичный
+ключ агента, никаких секретов. Этот приватный репо остаётся архивом.
+
+**Windows (PowerShell)** — даётся владельцу одной строкой:
+```powershell
+irm https://raw.githubusercontent.com/VolcharaVasiliy/ai-bridge-boot/main/boot.ps1 | iex
+```
+
+**Windows (cmd.exe):**
+```
+powershell -nop -ep bypass -c "irm https://raw.githubusercontent.com/VolcharaVasiliy/ai-bridge-boot/main/boot.ps1|iex"
+```
+
+**Linux-песочница агента:**
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/VolcharaVasiliy/ai-bridge-boot/main/linux/boot.sh)
+```
+
+Опции boot.ps1 (через scriptblock-форму): `-Check` (только проверка),
+`-DryRun` (скачать и показать, не запускать), `-TailscaleKey tskey-auth-…`
+(тихий логин Tailscale), `-AgentKey "ssh-ed25519 …"` (заменить ключ),
+`-NoElevate` (в текущем админ-окне). Проверено: `boot.ps1 -DryRun` корректно
+скачивает и проверяет файлы; `setup-pc.ps1 -Check` даёт полный отчёт.
+
+---
+
 ## 1. Для ИИ-агента: прочитай это первым
 
 **Обычный случай (мост уже настраивали):**
