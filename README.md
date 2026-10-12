@@ -73,8 +73,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/VolcharaVasiliy/ai-bridge-bo
    если состояние потеряно, Tailscale auth key (`tskey-auth-…`).
 2. Если у тебя нет SSH-ключа агента — сгенерируй новую пару:
    `ssh-keygen -t ed25519 -f ~/.ssh/agent_ed25519 -N ""`
-   и попроси владельца на ПК выполнить (один клик UAC):
-   `powershell -NoProfile -ExecutionPolicy Bypass -File windows\add-key.ps1 -Key "<твой публичный ключ>"`
+   и дай владельцу ОДНУ строку (вставит в PowerShell, один клик UAC):
+   `&([scriptblock]::Create((irm https://raw.githubusercontent.com/VolcharaVasiliy/ai-bridge-boot/main/windows/add-key.ps1))) -Key "<твой публичный ключ>"`
 3. Дальше — как в «обычном случае»: `bash linux/ts-boot.sh` → `remote.sh ping`.
 
 Спроси у пользователя только то, чего не хватает. Ключи и пароли —
